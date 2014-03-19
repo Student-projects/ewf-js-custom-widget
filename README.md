@@ -170,7 +170,6 @@ Before starting the javascript development part we add the control to the page.
 ## Javascript Part
 The part of the application an be written in javascript or any language which compiles to javascript. We decided to use coffescript beacuse it is simpler to define classes.
 
-First steps
 - Create a file assets/graph.css
 ```CSS
 .bar {
