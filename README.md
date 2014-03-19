@@ -3,7 +3,7 @@ EWF JS WIDGET TEMPLATE PROJECT
 
 
 Getting Started
-- Clone template project `git git@github.com:ynh/ewf-js-widget-template.git`
+- Clone template project `git@github.com:ynh/ewf-js-widget-template.git`
 - Clone ewf repository `git@github.com:ynh/EWF.git` and checkout the widget branch
 - Link ewf folder `ln -s PATH_TO_EWF_REPOSITORY $ISE_EIFFEL/contrib/library/ewf-dev`
 
