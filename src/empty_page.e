@@ -27,6 +27,7 @@ feature -- Initialization
 			main_control.add_column (6)
 			main_control.add_column (6)
 			create chart.make
+			chart.set_data (<<["Eiffel",100.0],["Java",20.0],["C++",40.0]>>)
 			main_control.add_control (1,chart)
 
 			-- Create button

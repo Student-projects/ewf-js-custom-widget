@@ -22,6 +22,7 @@ feature {NONE} -- Initialization
 	make
 		do
 			make_control ("div")
+			data := <<>>
 		end
 
 feature -- State handling
@@ -42,11 +43,35 @@ feature -- Callback
 				-- Do nothing here
 		end
 
+feature -- Data
+
+	set_data (a_data: like data)
+		do
+			data := a_data
+			state_changes.replace (data_as_json, "data")
+		end
+
+	data_as_json : JSON_ARRAY
+	local
+		item: WSF_JSON_OBJECT
+	do
+		create Result.make_array
+		across
+			data as el
+		loop
+			create item.make
+			if attached {STRING_32}el.item.at(0) as key and attached {DOUBLE}el.item.at(1) as value then
+			item.put_string (key, "key")
+			item.put_real (value, "value")
+			Result.add(item)
+			end
+		end
+	end
+	data: ARRAY [TUPLE [STRING_8, DOUBLE]]
+
 feature -- Rendering
 
 	render: STRING_32
-		local
-			temp: STRING_32
 		do
 			Result := render_tag ("Loading ...", "")
 		end
