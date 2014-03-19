@@ -114,7 +114,9 @@ Now we can create the set data functions. This step is straight forward:
 	
 			data: ARRAY [TUPLE [STRING_8, DOUBLE]]
 
-The state handling is still missing. We need to restore the state since the objects are recreated on each callback. 
+The state handling is still missing. We need to restore the state, because the objects are recreated on each callback. 
+
+
 
 
 		feature -- State handling
@@ -143,3 +145,9 @@ The state handling is still missing. We need to restore the state since the obje
 					Result.put (data_as_json, "data")
 				end
 
+## Javascript Part
+The part of the application an be written in javascript or any language which compiles to javascript. We decided to use javascript beacuse it is simpler to define classes. 
+
+
+	class WSF_BARCHART_CONTROL extends WSF_CONTROL
+	  requirements: ['/assets/d3.min.js']

@@ -38,7 +38,7 @@ feature -- State handling
 					if attached {JSON_OBJECT} d.item as citem
 						and then attached {JSON_STRING} citem.item ("key") as key
 						and then attached {JSON_NUMBER} citem.item ("value") as value then
-						data.put ([key.item,value.item.to_real_64],d.cursor_index)
+						data.put ([key.item,value.item.to_real_64], d.cursor_index)
 					end
 				end
 			end
