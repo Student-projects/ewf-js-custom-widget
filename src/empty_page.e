@@ -31,9 +31,9 @@ feature -- Initialization
 			main_control.add_control (1,chart)
 
 			-- Create button
-			create button.make ("0")
+			create button.make ("Load new dataset")
 			button.set_click_event (agent do
-				button.set_text ((button.text.to_integer_32+1).out)
+				chart.set_data (<<["Eiffel",120.0],["Java",60.0],["C#",30.0],["Python",230.0]>>)
 			end)
 			--Add button control
 			main_control.add_control (2,button)

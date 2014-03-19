@@ -94,7 +94,7 @@ Now we can create the set data functions. This step is straight forward:
 					data := a_data
 					state_changes.replace (data_as_json, "data")
 				end
-	
+
 			data_as_json : JSON_ARRAY
 			local
 				item: WSF_JSON_OBJECT
@@ -104,46 +104,42 @@ Now we can create the set data functions. This step is straight forward:
 					data as el
 				loop
 					create item.make
-					if attached {STRING_8}el.item.at(1) as key and attached {DOUBLE}el.item.at(2) as value then
+					if attached {STRING_8} el.item.at(1) as key and attached {DOUBLE}el.item.at(2) as value then
 					item.put_string (key, "key")
 					item.put_real (value, "value")
 					Result.add(item)
 					end
 				end
 			end
-	
 			data: ARRAY [TUPLE [STRING_8, DOUBLE]]
 
 The state handling is still missing. We need to restore the state, because the objects are recreated on each callback. 
 
 
-
-
-		feature -- State handling
-
-			set_state (new_state: JSON_OBJECT)
-					-- Restore data from json
-				do
-					if attached {JSON_ARRAY} new_state.item ("data") as new_data then
-						create data.make_empty
-						across
-							new_data.array_representation as d
-						loop
-							if attached {JSON_OBJECT} d.item as citem
-								and then attached {JSON_STRING} citem.item ("key") as key
-								and then attached {JSON_NUMBER} citem.item ("value") as value then
-								data.put ([key.item,value.item.to_real_64],d.cursor_index)
-							end
+		set_state (new_state: JSON_OBJECT)
+				-- Restore data from json
+			do
+				if attached {JSON_ARRAY} new_state.item ("data") as new_data then
+					create data.make_filled (["",0.0], 1, new_data.array_representation.count)
+					across
+						new_data.array_representation as d
+					loop
+						if attached {JSON_OBJECT} d.item as citem
+							and then attached {JSON_STRING} citem.item ("key") as key
+							and then attached {JSON_NUMBER} citem.item ("value") as value then
+							data.put ([key.item,value.item.to_real_64], d.cursor_index)
 						end
 					end
 				end
+			end
 
-			state: WSF_JSON_OBJECT
-					-- Return state with data
-				do
-					create Result.make
-					Result.put (data_as_json, "data")
-				end
+		state: WSF_JSON_OBJECT
+				-- Return state with data
+			do
+				create Result.make
+				Result.put (data_as_json, "data")
+			end
+
 
 ## Javascript Part
 The part of the application an be written in javascript or any language which compiles to javascript. We decided to use javascript beacuse it is simpler to define classes. 
@@ -162,9 +158,9 @@ After loading the dependencies the attach_events function is executed. In this f
 				right: 20
 				bottom: 30
 				left: 40
-				
-			data = @state.data
-			console.log @state
+
+			#Clear
+			@$el.html("")
 			#Calculate width
 			width = @$el.width() - margin.left - margin.right
 			height = 500 - margin.top - margin.bottom
@@ -177,13 +173,33 @@ After loading the dependencies the attach_events function is executed. In this f
 				height
 				0
 			])
-			xAxis = d3.svg.axis().scale(x).orient("bottom")
-			yAxis = d3.svg.axis().scale(y).orient("left").ticks(10, "%")
+			@xAxis = d3.svg.axis().scale(x).orient("bottom")
+			@yAxis = d3.svg.axis().scale(y).orient("left").ticks(10)
 			svg = d3.select(@$el[0]).append("svg")
 				.attr("width", width + margin.left + margin.right)
 				.attr("height", height + margin.top + margin.bottom)
 				.append("g")
 				.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			
+			#Store svg, x and y scale in class so we can update the domain if a callback occures
+			@x = x
+			@y = y
+			@svg = svg
+			@height = height
+			@xAxis_container = svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", "translate(0," + height + ")")
+			@yAxis_container = svg.append("g")
+				.attr("class", "y axis")
+			#Call build graph to load the graph data
+			@updatechart()
+
+		updatechart: ()->
+			height = @height
+			data = @state.data
+			x = @x
+			y = @y
+			#Set domain
 			x.domain data.map((d) ->
 				d.key
 			)
@@ -193,31 +209,49 @@ After loading the dependencies the attach_events function is executed. In this f
 					d.value
 				)
 			]
-
-			svg.append("g")
-				.attr("class", "x axis")
-				.attr("transform", "translate(0," + height + ")")
-				.call xAxis
-
-			svg.append("g")
-				.attr("class", "y axis")
-				.call(yAxis)
-				.append("text")
-					.attr("transform", "rotate(-90)")
-					.attr("y", 6).attr("dy", ".71em")
-					.style("text-anchor", "end")
-					.text "Frequency"
-
-			svg.selectAll(".bar")
-				.data(data).enter()
-					.append("rect")
+			#Update axis
+			@xAxis_container.transition().duration(1000).call @xAxis
+			@yAxis_container.transition().duration(1000).call @yAxis
+			#Map data
+			rect = @svg.selectAll(".bar")
+				.data(data, (d)-> d.key)
+			#Add new bars
+			rect.enter()
+					.insert("rect")
 						.attr("class", "bar")
 						.attr("x", (d) ->
 							x d.key
 						)
 						.attr("width", x.rangeBand())
 						.attr("y", (d) ->
-							y d.value
+							height
 						)
 						.attr "height", (d) ->
-							height - y(d.value)
+							0
+			#Adjust bar positions and sizes
+			rect.transition().duration(1000).attr("x", (d) ->
+					x d.key
+				)
+				.attr("width", x.rangeBand())
+				.attr("y", (d) ->
+					y d.value
+				)
+				.attr "height", (d) ->
+					height - y(d.value)
+			#Animate exiting bars
+			rect.exit().transition().duration(1000)
+				.style('opacity', 0)
+				.attr("height", (d) ->
+					0
+				).attr("y", (d) ->
+					height
+				).remove()
+
+
+The last part which is still missing. Is the update state event handling. If the state is updated the update function is called with the new state as parameter. All we must do now is update the state object and call the updatechart function
+
+			update: (state) ->
+				if state.data != undefined
+					@state['data'] = state.data
+					data = state.data
+					@updatechart()

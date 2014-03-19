@@ -31,7 +31,7 @@ feature -- State handling
 			-- Restore data from json
 		do
 			if attached {JSON_ARRAY} new_state.item ("data") as new_data then
-				create data.make_empty
+				create data.make_filled (["",0.0], 1, new_data.array_representation.count)
 				across
 					new_data.array_representation as d
 				loop

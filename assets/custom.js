@@ -13,7 +13,7 @@ WSF_BARCHART_CONTROL = (function(_super) {
   WSF_BARCHART_CONTROL.prototype.requirements = ['/assets/d3.min.js', '/assets/graph.css'];
 
   WSF_BARCHART_CONTROL.prototype.attach_events = function() {
-    var data, height, margin, svg, width, x, xAxis, y, yAxis;
+    var height, margin, svg, width, x, y;
     WSF_BARCHART_CONTROL.__super__.attach_events.apply(this, arguments);
     margin = {
       top: 20,
@@ -21,16 +21,29 @@ WSF_BARCHART_CONTROL = (function(_super) {
       bottom: 30,
       left: 40
     };
-    data = this.state.data;
-    console.log(this.state);
     this.$el.html("");
     width = this.$el.width() - margin.left - margin.right;
     height = 500 - margin.top - margin.bottom;
     x = d3.scale.ordinal().rangeRoundBands([0, width], .1);
     y = d3.scale.linear().range([height, 0]);
-    xAxis = d3.svg.axis().scale(x).orient("bottom");
-    yAxis = d3.svg.axis().scale(y).orient("left").ticks(10);
+    this.xAxis = d3.svg.axis().scale(x).orient("bottom");
+    this.yAxis = d3.svg.axis().scale(y).orient("left").ticks(10);
     svg = d3.select(this.$el[0]).append("svg").attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    this.x = x;
+    this.y = y;
+    this.svg = svg;
+    this.height = height;
+    this.xAxis_container = svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")");
+    this.yAxis_container = svg.append("g").attr("class", "y axis");
+    return this.updatechart();
+  };
+
+  WSF_BARCHART_CONTROL.prototype.updatechart = function() {
+    var data, height, rect, x, y;
+    height = this.height;
+    data = this.state.data;
+    x = this.x;
+    y = this.y;
     x.domain(data.map(function(d) {
       return d.key;
     }));
@@ -39,15 +52,39 @@ WSF_BARCHART_CONTROL = (function(_super) {
         return d.value;
       })
     ]);
-    svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis);
-    svg.append("g").attr("class", "y axis").call(yAxis);
-    return svg.selectAll(".bar").data(data).enter().append("rect").attr("class", "bar").attr("x", function(d) {
+    this.xAxis_container.transition().duration(1000).call(this.xAxis);
+    this.yAxis_container.transition().duration(1000).call(this.yAxis);
+    rect = this.svg.selectAll(".bar").data(data, function(d) {
+      return d.key;
+    });
+    rect.enter().insert("rect").attr("class", "bar").attr("x", function(d) {
+      return x(d.key);
+    }).attr("width", x.rangeBand()).attr("y", function(d) {
+      return height;
+    }).attr("height", function(d) {
+      return 0;
+    });
+    rect.transition().duration(1000).attr("x", function(d) {
       return x(d.key);
     }).attr("width", x.rangeBand()).attr("y", function(d) {
       return y(d.value);
     }).attr("height", function(d) {
       return height - y(d.value);
     });
+    return rect.exit().transition().duration(1000).style('opacity', 0).attr("height", function(d) {
+      return 0;
+    }).attr("y", function(d) {
+      return height;
+    }).remove();
+  };
+
+  WSF_BARCHART_CONTROL.prototype.update = function(state) {
+    var data;
+    if (state.data !== void 0) {
+      this.state['data'] = state.data;
+      data = state.data;
+      return this.updatechart();
+    }
   };
 
   return WSF_BARCHART_CONTROL;
