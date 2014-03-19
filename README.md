@@ -79,36 +79,37 @@ Based on the shared state we now can start the Eiffel implementation of the cont
 	end
 
 Now we can create the set data functions. This step is straight forward:
- * We add the data structure to the class.
+* We add the data structure to the class.
 
- * Create a setter function which registers the change in the state_changes json object. This object is used to pass the state changes which happen in a call back to the browser. 
+* Create a setter function which registers the change in the state_changes json object. This object is used to pass the state changes which happen in a call back to the browser. 
 
- * Since the list of tuples is not a primitiv data type we need a function which translates the data as a json object. 
+* Since the list of tuples is not a primitiv data type we need a function which translates the data as a json object. 
 
+### Code changes
 
-	feature -- Data
+		feature -- Data
 
-		set_data (a_data: like data)
+			set_data (a_data: like data)
+				do
+					data := a_data
+					state_changes.replace (data_as_json, "data")
+				end
+	
+			data_as_json : JSON_ARRAY
+			local
+				item: WSF_JSON_OBJECT
 			do
-				data := a_data
-				state_changes.replace (data_as_json, "data")
-			end
-
-		data_as_json : JSON_ARRAY
-		local
-			item: WSF_JSON_OBJECT
-		do
-			create Result.make_array
-			across
-				data as el
-			loop
-				create item.make
-				if attached {STRING_32}el.item.at(0) as key and attached {DOUBLE}el.item.at(1) as value then
-				item.put_string (key, "key")
-				item.put_real (value, "value")
-				Result.add(item)
+				create Result.make_array
+				across
+					data as el
+				loop
+					create item.make
+					if attached {STRING_32}el.item.at(0) as key and attached {DOUBLE}el.item.at(1) as value then
+					item.put_string (key, "key")
+					item.put_real (value, "value")
+					Result.add(item)
+					end
 				end
 			end
-		end
-
-		data: ARRAY [TUPLE [STRING_8, DOUBLE]]
+	
+			data: ARRAY [TUPLE [STRING_8, DOUBLE]]
