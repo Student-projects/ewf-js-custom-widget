@@ -19,6 +19,7 @@ feature
 
 	initialize_controls
 		do
+			add_javascript ("assets/custom.js")
 			create control.make
 			control.add_class ("container")
 			create navbar.make_with_brand ("EWF JS CUSTOM WIDGET")

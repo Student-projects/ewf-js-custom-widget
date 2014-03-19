@@ -76,7 +76,7 @@ feature -- Data
 			data as el
 		loop
 			create item.make
-			if attached {STRING_32} el.item.at(0) as key and attached {DOUBLE}el.item.at(1) as value then
+			if attached {STRING_8} el.item.at(1) as key and attached {DOUBLE}el.item.at(2) as value then
 			item.put_string (key, "key")
 			item.put_real (value, "value")
 			Result.add(item)
