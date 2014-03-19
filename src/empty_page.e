@@ -22,6 +22,8 @@ feature -- Initialization
 	initialize_controls
 		do
 			Precursor
+			-- Bind custom.js
+			add_javascript ("assets/custom.js")
 			navbar.set_active (1)
 			-- Define colum 12/12
 			main_control.add_column (6)
@@ -37,7 +39,6 @@ feature -- Initialization
 			end)
 			--Add button control
 			main_control.add_control (2,button)
-
 		end
 
 feature -- Implementation
