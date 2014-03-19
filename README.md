@@ -18,6 +18,8 @@ The wsf_js_widget module provides so called "statefull" controls which can be mo
 #Goal
 The goal of this tutorial is to build a custom js widget control. We will build a simple bar chart which can be modified by the server. The javascript implementation is based on the javascript library d3. http://bl.ocks.org/mbostock/3885304
 
+![Preview](https://raw.githubusercontent.com/ynh/ewf-js-custom-widget/master/goal.gif)
+
 # Step 1
 First we define the state which is shared between the client and the server. The bar chart data can be represented as a key value hashmap, but since the json standard does guarantee the key order, we will use a JSON list  containing objects with the key and the value.
 
