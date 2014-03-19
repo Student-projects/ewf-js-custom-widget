@@ -28,13 +28,29 @@ feature {NONE} -- Initialization
 feature -- State handling
 
 	set_state (new_state: JSON_OBJECT)
+			-- Restore data from json
 		do
+			if attached {JSON_ARRAY} new_state.item ("data") as new_data then
+				create data.make_empty
+				across
+					new_data.array_representation as d
+				loop
+					if attached {JSON_OBJECT} d.item as citem
+						and then attached {JSON_STRING} citem.item ("key") as key
+						and then attached {JSON_NUMBER} citem.item ("value") as value then
+						data.put ([key.item,value.item.to_real_64],d.cursor_index)
+					end
+				end
+			end
 		end
 
 	state: WSF_JSON_OBJECT
+			-- Return state with data
 		do
 			create Result.make
+			Result.put (data_as_json, "data")
 		end
+
 
 feature -- Callback
 
@@ -60,7 +76,7 @@ feature -- Data
 			data as el
 		loop
 			create item.make
-			if attached {STRING_32}el.item.at(0) as key and attached {DOUBLE}el.item.at(1) as value then
+			if attached {STRING_32} el.item.at(0) as key and attached {DOUBLE}el.item.at(1) as value then
 			item.put_string (key, "key")
 			item.put_real (value, "value")
 			Result.add(item)
